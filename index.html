@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GUS SKYY OS — Mission Control</title>
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --card: #111827;
+      --border: #1f2937;
+      --accent: #3b82f6;
+      --accent2: #10b981;
+      --accent3: #f59e0b;
+      --danger: #ef4444;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --font: 'Segoe UI', system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
+
+    /* HEADER */
+    header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 40px; height: 40px; background: var(--accent); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; }
+    .logo-text h1 { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+    .logo-text p { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; }
+    .header-right { display: flex; align-items: center; gap: 16px; }
+    .status-badge { background: #052e16; border: 1px solid var(--accent2); color: var(--accent2);
+      padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .live-dot { width: 8px; height: 8px; background: var(--accent2); border-radius: 50%;
+      display: inline-block; margin-right: 6px; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .date-time { font-size: 13px; color: var(--muted); }
+
+    /* NAV TABS */
+    nav { background: var(--card); border-bottom: 1px solid var(--border);
+      padding: 0 24px; display: flex; gap: 4px; overflow-x: auto; }
+    nav button { background: none; border: none; color: var(--muted); padding: 14px 18px;
+      font-size: 13px; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent;
+      white-space: nowrap; transition: all 0.2s; }
+    nav button:hover { color: var(--text); }
+    nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* MAIN */
+    main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+
+    /* KPI GRID */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .kpi-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .kpi-card .value { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+    .kpi-card .sub { font-size: 12px; color: var(--muted); }
+    .kpi-card.green .value { color: var(--accent2); }
+    .kpi-card.blue .value { color: var(--accent); }
+    .kpi-card.yellow .value { color: var(--accent3); }
+    .kpi-card.red .value { color: var(--danger); }
+
+    /* SECTION */
+    .section-title { font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 1px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* GRID 2 COL */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+    @media(max-width:900px){ .grid-2 { grid-template-columns: 1fr; } }
+
+    /* CARD */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    .card h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--text); }
+
+    /* AGENT GRID */
+    .agent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .agent-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px; text-align: center; transition: border-color 0.2s; cursor: default; }
+    .agent-card:hover { border-color: var(--accent); }
+    .agent-avatar { width: 44px; height: 44px; border-radius: 50%; margin: 0 auto 8px;
+      display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .agent-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+    .agent-role { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .agent-status { font-size: 10px; padding: 2px 8px; border-radius: 10px; display: inline-block; }
+    .agent-status.active { background: #052e16; color: var(--accent2); }
+    .agent-status.idle { background: #1c1917; color: var(--accent3); }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 10px 12px; color: var(--muted); font-size: 11px;
+      text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+    td { padding: 10px 12px; border-bottom: 1px solid #1a2030; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(59,130,246,0.04); }
+
+    /* BADGE */
+    .badge { padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+    .badge.green { background: #052e16; color: var(--accent2); }
+    .badge.blue { background: #0c1a3a; color: var(--accent); }
+    .badge.yellow { background: #1c1400; color: var(--accent3); }
+    .badge.red { background: #2d0a0a; color: var(--danger); }
+    .badge.gray { background: #1f2937; color: var(--muted); }
+
+    /* PROGRESS BAR */
+    .progress-wrap { margin-bottom: 12px; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+    .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+
+    /* PIPELINE */
+    .pipeline { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 24px; }
+    .pipe-col { min-width: 200px; background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px; }
+    .pipe-col h4 { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 12px; display: flex; justify-content: space-between; }
+    .pipe-item { background: #0f172a; border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px; margin-bottom: 8px; font-size: 12px; }
+    .pipe-item .name { font-weight: 600; margin-bottom: 2px; }
+    .pipe-item .meta { color: var(--muted); font-size: 11px; }
+
+    /* TABS CONTENT */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ALERT */
+    .alert { background: #1c0a0a; border: 1px solid #7f1d1d; border-radius: 8px;
+      padding: 12px 16px; margin-bottom: 12px; font-size: 13px; display: flex; gap: 10px; align-items: flex-start; }
+    .alert.warning { background: #1c1400; border-color: #78350f; }
+    .alert.info { background: #0c1a3a; border-color: #1e3a8a; }
+
+    /* FOOTER */
+    footer { text-align: center; padding: 24px; color: var(--muted); font-size: 12px;
+      border-top: 1px solid var(--border); margin-top: 40px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">G</div>
+    <div class="logo-text">
+      <h1>GUS SKYY OS</h1>
+      <p>Mission Control Dashboard</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="status-badge"><span class="live-dot"></span>14 Agents Online</span>
+    <span class="date-time" id="clock">Loading...</span>
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('overview',this)">Overview</button>
+  <button onclick="showTab('agents',this)">AI Agents</button>
+  <button onclick="showTab('pipeline',this)">Sales Pipeline</button>
+  <button onclick="showTab('jobs',this)">Active Jobs</button>
+  <button onclick="showTab('finance',this)">Finance</button>
+  <button onclick="showTab('tasks',this)">Task Queue</button>
+</nav>
+
+<main>
+
+  <!-- OVERVIEW TAB -->
+  <div id="overview" class="tab-content active">
+    <div class="kpi-grid">
+      <div class="kpi-card green">
+        <div class="label">Revenue FY25</div>
+        <div class="value">$1.27M</div>
+        <div class="sub">+18.3% profit margin</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="label">Net Profit FY25</div>
+        <div class="value">$232K</div>
+        <div class="sub">$232,467 confirmed</div>
+      </div>
+      <div class="kpi-card yellow">
+        <div class="label">Active Projects</div>
+        <div class="value">12</div>
+        <div class="sub">NJ Residential</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="label">AI Agents</div>
+        <div class="value">14</div>
+        <div class="sub">All systems operational</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="label">Leads This Month</div>
+        <div class="value">18+</div>
+        <div class="sub">Via IME Portal</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="label">Critical Alerts</div>
+        <div class="value">5</div>
+        <div class="sub">Require attention</div>
+      </div>
+    </div>
+
+    <div class="section-title">Critical Alerts</div>
+    <div class="alert"><span>🔴</span><div><strong>CONST-008 Vitor Nios</strong> — Foundation Maplewood, 7+ weeks no response. Immediate follow-up required.</div></div>
+    <div class="alert warning"><span>🟡</span><div><strong>W-9 Missing</strong> — 13 subcontractors without W-9 on file. Blocks all payments (compliance critical).</div></div>
+    <div class="alert warning"><span>🟡</span><div><strong>Cindy Wint $5,851</strong> — 210 days post-sale, no installation scheduled. HOT issue.</div></div>
+    <div class="alert warning"><span>🟡</span><div><strong>Mercedes Miller $31K</strong> — 100+ days post-sale, no installation. HOT issue.</div></div>
+    <div class="alert info"><span>🔵</span><div><strong>QB-TOKENS</strong> — OAuth2 tokens generated today. Access token expires in 60min. Configure refresh flow.</div></div>
+
+    <div class="section-title" style="margin-top:24px">Revenue Breakdown</div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Revenue by Service Line</h3>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Flooring</span><span style="color:var(--accent2)">$508K (40%)</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:40%;background:var(--accent2)"></div></div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Cabinets</span><span style="color:var(--accent)">$381K (30%)</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:30%;background:var(--accent)"></div></div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Construction</span><span style="color:var(--accent3)">$254K (20%)</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:20%;background:var(--accent3)"></div></div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Other</span><span style="color:var(--muted)">$127K (10%)</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:10%;background:var(--muted)"></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Cost Structure</h3>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Labor (Subs)</span><span style="color:var(--danger)">$635K (50%)</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:50%;background:var(--danger)"></div></div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Materials</span><span style="color:var(--accent3)">$254K (20%)</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:20%;background:var(--accent3)"></div></div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>F&D (15%)</span><span style="color:var(--accent)">$191K (15%)</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:15%;background:var(--accent)"></div></div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>NJ Tax (6.625%)</span><span style="color:var(--muted)">$84K (6.6%)</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:6.6%;background:var(--muted)"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AGENTS TAB -->
+  <div id="agents" class="tab-content">
+    <div class="section-title">14 Active AI Agents</div>
+    <div class="agent-grid">
+      <div class="agent-card">
+        <div class="agent-avatar" style="background:#1e3a5f">🧠</div>
+        <div class="agent-name">RADAR</div>
+        <div class="agent-role">COO / Orchestrator</div>
+        <span class="agent-status active">Active</span>
+      </div>
+      <div class="agent-card">
+        <div class="agent-avatar" style="background:#1a2e1a">💰</div>
+        <div class="agent-name">LEDGER</div>
+        <div class="agent-role">CFO / Finance</div>
+        <span class="agent-status active">Active</span>
+      </div>
+      <div class="agent-card">
+        <div class="agent-avatar" style="background:#2d1a00">🔨</div>
+        <div class="agent-name">FORGE</div>
+        <div class="agent-role">COO / Field Ops</div>
+        <span class="agent-status active">Active</span>
+      </div>
+      <div class="agent-card">
+        <div class="agent-avatar" style="background:#1a0a2e">🎯</div>
+        <div class="agent-name">NOVA</div>
+        <div class="agent-role">CMO / Marketing</div>
+        <span class="agent-status active">Active</span>
+      </div>
+      <div class="agent-card">
+        <div class="agent-avatar" style="background:#1a2e1a">🤝</div>
+        <div class="agent-name">NEXUS</div>
+        <div class="agent-role">CRO / Sales</div>
+        <span class="agent-status active">Active</span>
+      </div>
+      <div class="agent-card">
+        <div class="agent-avatar" style="background:#2d1a00">⚖️</div>
+        <div class="agent-name">SHIELD</div>
+        <div class="agent-role">CLO / Legal</div>
+        <span class="agent-status active">Active</span>
+      </div>
+      <div class="agent-card">
+        <div class="agent-avatar" style="background:#1e3a5f">👥</div>
+        <div class="agent-name">PULSE</div>
+        <div class="agent-role">CHRO / HR</div>
+        <span class="agent-status active">Active</span>
+      </div>
+      <div class="agent-card">
+        <div class="agent-avatar" style="background:#1a0a2e">🔧</div>
+        <div class="agent-name">CORE</div>
+        <div class="agent-role">CTO / Tech</div>
+        <span class="agent-status active">Active</span>
+      </div>
+      <div class="agent-card">
+        <div class="agent-avatar" style="background:#1a2e1a">📊</div>
+        <div class="agent-name">ATLAS</div>
+        <div class="agent-role">CIO / Data</div>
+        <span class="agent-status active">Active</span>
+      </div>
+      <div class="agent-card">
+        <div class="agent-avatar" style="background:#2d1a00">🎨</div>
+        <div class="agent-name">SPARK</div>
+        <div class="agent-role">CCO / Creative</div>
+        <span class="agent-status active">Active</span>
+      </div>
+      <div class="agent-card">
+        <div class="agent-avatar" style="background:#1e3a5f">🌐</div>
+        <div class="agent-name">SCOUT</div>
+        <div class="agent-role">Chief Strategy</div>
+        <span class="agent-status active">Active</span>
+      </div>
+      <div class="agent-card">
+        <div class="agent-avatar" style="background:#1a0a2e">📦</div>
+        <div class="agent-name">DEPOT</div>
+        <div class="agent-role">CPO / Procurement</div>
+        <span class="agent-status active">Active</span>
+      </div>
+      <div class="agent-card">
+        <div class="agent-avatar" style="background:#1a2e1a">🏗️</div>
+        <div class="agent-name">BUILD</div>
+        <div class="agent-role">CQO / Quality</div>
+        <span class="agent-status active">Active</span>
+      </div>
+      <div class="agent-card">
+        <div class="agent-avatar" style="background:#2d1a00">🤖</div>
+        <div class="agent-name">MANUS</div>
+        <div class="agent-role">Browser / Automation</div>
+        <span class="agent-status active">Active</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIPELINE TAB -->
+  <div id="pipeline" class="tab-content">
+    <div class="section-title">Sales Pipeline — IME Portal Sync</div>
+    <div class="pipeline">
+      <div class="pipe-col">
+        <h4>New Leads <span class="badge blue">18</span></h4>
+        <div class="pipe-item">
+          <div class="name">Jennifer Hoyer</div>
+          <div class="meta">Flooring · WO#40291076 · Wallace</div>
+        </div>
+        <div class="pipe-item">
+          <div class="name">Pablo Andino</div>
+          <div class="meta">Cabinets · WO#40267821</div>
+        </div>
+        <div class="pipe-item">
+          <div class="name">Sivaprakash S.</div>
+          <div class="meta">Cabinets · WO#40264539</div>
+        </div>
+        <div class="pipe-item">
+          <div class="name">Ujjwal Sinha</div>
+          <div class="meta">Cabinets · WO#39699292</div>
+        </div>
+      </div>
+      <div class="pipe-col">
+        <h4>Appt Pending <span class="badge yellow">8</span></h4>
+        <div class="pipe-item">
+          <div class="name">Cindy Wint</div>
+          <div class="meta">Flooring · $5,851 · 210 days</div>
+        </div>
+        <div class="pipe-item">
+          <div class="name">Mercedes Miller</div>
+          <div class="meta">Construction · $31K · 100 days</div>
+        </div>
+      </div>
+      <div class="pipe-col">
+        <h4>In Progress <span class="badge blue">5</span></h4>
+        <div class="pipe-item">
+          <div class="name">CONST-008</div>
+          <div class="meta">Foundation Maplewood · Vitor Nios</div>
+        </div>
+        <div class="pipe-item">
+          <div class="name">GS-554 Maplewood</div>
+          <div class="meta">Active Job</div>
+        </div>
+        <div class="pipe-item">
+          <div class="name">GS-Hedden Newark</div>
+          <div class="meta">Active Job</div>
+        </div>
+      </div>
+      <div class="pipe-col">
+        <h4>Completed <span class="badge green">3</span></h4>
+        <div class="pipe-item">
+          <div class="name">GS-Foundation</div>
+          <div class="meta">Closed · Paid</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JOBS TAB -->
+  <div id="jobs" class="tab-content">
+    <div class="section-title">Active Construction Jobs</div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Job ID</th><th>Client</th><th>Type</th><th>Status</th><th>Value</th><th>Days Active</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>CONST-008</td><td>Vitor Nios</td><td>Foundation</td><td><span class="badge red">Critical</span></td><td>—</td><td>49+</td></tr>
+            <tr><td>GS-554</td><td>554 Maplewood</td><td>Renovation</td><td><span class="badge blue">Active</span></td><td>—</td><td>—</td></tr>
+            <tr><td>GS-HED</td><td>Hedden Newark</td><td>Renovation</td><td><span class="badge blue">Active</span></td><td>—</td><td>—</td></tr>
+            <tr><td>GS-FND</td><td>Foundation</td><td>Construction</td><td><span class="badge green">Complete</span></td><td>—</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINANCE TAB -->
+  <div id="finance" class="tab-content">
+    <div class="kpi-grid">
+      <div class="kpi-card green">
+        <div class="label">Total Revenue FY25</div>
+        <div class="value">$1.27M</div>
+        <div class="sub">$1,270,989</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="label">Net Profit</div>
+        <div class="value">$232K</div>
+        <div class="sub">18.3% margin</div>
+      </div>
+      <div class="kpi-card yellow">
+        <div class="label">QuickBooks</div>
+        <div class="value">OAuth2</div>
+        <div class="sub">Tokens active — sandbox</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="label">W-9 Missing</div>
+        <div class="value">13</div>
+        <div class="sub">Subcontractors</div>
+      </div>
+    </div>
+    <div class="section-title">QuickBooks Integration Status</div>
+    <div class="alert info">
+      <span>🔵</span>
+      <div>
+        <strong>OAuth2 Tokens Generated — 2026-03-21</strong><br>
+        Environment: Sandbox · Realm ID: 9341455667906253<br>
+        Access Token: expires in ~60min · Refresh Token: expires 2026-06-30<br>
+        Scope: com.intuit.quickbooks.accounting
+      </div>
+    </div>
+  </div>
+
+  <!-- TASKS TAB -->
+  <div id="tasks" class="tab-content">
+    <div class="section-title">Task Queue — Pending Items</div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Task</th><th>Assigned To</th><th>Priority</th><th>Status</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>OAuth2 QuickBooks</td>
+              <td>MANUS</td>
+              <td><span class="badge red">Critical</span></td>
+              <td><span class="badge green">Done</span></td>
+              <td>Tokens generated & sent</td>
+            </tr>
+            <tr>
+              <td>Deploy Dashboard</td>
+              <td>MANUS</td>
+              <td><span class="badge red">Critical</span></td>
+              <td><span class="badge blue">In Progress</span></td>
+              <td>GitHub + Render deploy</td>
+            </tr>
+            <tr>
+              <td>Create task_queue table</td>
+              <td>Gustavo / MANUS</td>
+              <td><span class="badge yellow">High</span></td>
+              <td><span class="badge yellow">Pending SQL</span></td>
+              <td>SQL ready — run in Supabase</td>
+            </tr>
+            <tr>
+              <td>Update SKILL.md (12 agents)</td>
+              <td>OpenClaw / MANUS</td>
+              <td><span class="badge yellow">High</span></td>
+              <td><span class="badge gray">Skipped</span></td>
+              <td>Via SSH — deferred</td>
+            </tr>
+            <tr>
+              <td>Verify API costs</td>
+              <td>LEDGER</td>
+              <td><span class="badge gray">Medium</span></td>
+              <td><span class="badge gray">Pending</span></td>
+              <td>Post-optimization check</td>
+            </tr>
+            <tr>
+              <td>W-9 Collection (13 subs)</td>
+              <td>PULSE / Edivania</td>
+              <td><span class="badge red">Critical</span></td>
+              <td><span class="badge gray">Pending</span></td>
+              <td>Blocks all payments</td>
+            </tr>
+            <tr>
+              <td>CONST-008 Follow-up</td>
+              <td>FORGE / Gustavo</td>
+              <td><span class="badge red">Critical</span></td>
+              <td><span class="badge gray">Pending</span></td>
+              <td>7+ weeks no response</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  GUS SKYY OS v1.0 · Mission Control Dashboard · Deployed via Manus · 2026-03-21
+</footer>
+
+<script>
+  function showTab(id, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent =
+      now.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'}) + ' · ' +
+      now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+  }
+  updateClock();
+  setInterval(updateClock, 30000);
+</script>
+</body>
+</html>
