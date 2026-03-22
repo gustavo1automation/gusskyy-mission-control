@@ -1,550 +1,1026 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GUS SKYY OS — Mission Control</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GUS SKYY OS v2.0 - Mission Control</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    :root {
-      --bg: #0a0e1a;
-      --card: #111827;
-      --border: #1f2937;
-      --accent: #3b82f6;
-      --accent2: #10b981;
-      --accent3: #f59e0b;
-      --danger: #ef4444;
-      --text: #f1f5f9;
-      --muted: #94a3b8;
-      --font: 'Segoe UI', system-ui, sans-serif;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
 
-    /* HEADER */
-    header {
-      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 24px;
-      display: flex; align-items: center; justify-content: space-between;
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #080c18 url('data:image/svg+xml,<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M 60 0 L 0 0 0 60" fill="none" stroke="%231a2332" stroke-width="0.5"/></pattern></defs><rect width="100%" height="100%" fill="%23080c18"/><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+      color: #e0e7ff;
+      overflow: hidden;
     }
-    .logo { display: flex; align-items: center; gap: 12px; }
-    .logo-icon { width: 40px; height: 40px; background: var(--accent); border-radius: 8px;
-      display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; }
-    .logo-text h1 { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
-    .logo-text p { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; }
-    .header-right { display: flex; align-items: center; gap: 16px; }
-    .status-badge { background: #052e16; border: 1px solid var(--accent2); color: var(--accent2);
-      padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-    .live-dot { width: 8px; height: 8px; background: var(--accent2); border-radius: 50%;
-      display: inline-block; margin-right: 6px; animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-    .date-time { font-size: 13px; color: var(--muted); }
 
-    /* NAV TABS */
-    nav { background: var(--card); border-bottom: 1px solid var(--border);
-      padding: 0 24px; display: flex; gap: 4px; overflow-x: auto; }
-    nav button { background: none; border: none; color: var(--muted); padding: 14px 18px;
-      font-size: 13px; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent;
-      white-space: nowrap; transition: all 0.2s; }
-    nav button:hover { color: var(--text); }
-    nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .container {
+      display: flex;
+      height: 100vh;
+    }
 
-    /* MAIN */
-    main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+    /* SIDEBAR */
+    .sidebar {
+      width: 260px;
+      background: linear-gradient(135deg, #0f1419 0%, #151c2a 100%);
+      border-right: 1px solid #1e293b;
+      overflow-y: auto;
+      padding: 20px 0;
+      position: fixed;
+      height: 100vh;
+      left: 0;
+      top: 0;
+      z-index: 1000;
+    }
 
-    /* KPI GRID */
-    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-    .kpi-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-    .kpi-card .value { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
-    .kpi-card .sub { font-size: 12px; color: var(--muted); }
-    .kpi-card.green .value { color: var(--accent2); }
-    .kpi-card.blue .value { color: var(--accent); }
-    .kpi-card.yellow .value { color: var(--accent3); }
-    .kpi-card.red .value { color: var(--danger); }
+    .logo {
+      padding: 20px 20px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
 
-    /* SECTION */
-    .section-title { font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase;
-      letter-spacing: 1px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .logo span {
+      color: #ff8c00;
+      font-size: 14px;
+    }
 
-    /* GRID 2 COL */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
-    @media(max-width:900px){ .grid-2 { grid-template-columns: 1fr; } }
+    .system-status {
+      padding: 0 20px 20px;
+      font-size: 12px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
 
-    /* CARD */
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-    .card h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--text); }
+    .system-status::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #22c55e;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+
+    nav {
+      margin-top: 20px;
+    }
+
+    .nav-section {
+      padding: 15px 20px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 15px;
+    }
+
+    .nav-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #cbd5e1;
+      transition: all 0.2s ease;
+      border-left: 3px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 140, 0, 0.1);
+      color: #fff;
+      border-left-color: #ff8c00;
+    }
+
+    .nav-item.active {
+      background: rgba(255, 140, 0, 0.15);
+      color: #ff8c00;
+      border-left-color: #ff8c00;
+      font-weight: 600;
+    }
+
+    /* MAIN CONTENT */
+    .content {
+      margin-left: 260px;
+      width: calc(100% - 260px);
+      height: 100vh;
+      overflow-y: auto;
+      background: #080c18;
+    }
+
+    .header {
+      padding: 30px 40px;
+      border-bottom: 1px solid #1e293b;
+      background: linear-gradient(135deg, rgba(8,12,24,0.95) 0%, rgba(15,18,30,0.95) 100%);
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    .main-area {
+      padding: 40px;
+    }
+
+    /* PAGES */
+    .page {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* KPI CARDS */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .kpi-card {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 24px;
+      transition: all 0.3s ease;
+    }
+
+    .kpi-card:hover {
+      border-color: #ff8c00;
+      box-shadow: 0 8px 16px rgba(255, 140, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .kpi-label {
+      font-size: 12px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .kpi-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .kpi-trend {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .kpi-trend.up {
+      color: #22c55e;
+    }
+
+    .kpi-trend.down {
+      color: #ef4444;
+    }
+
+    /* CHARTS */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .chart-card {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .chart-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
+    /* ALERTS */
+    .alerts-grid {
+      display: grid;
+      gap: 15px;
+      margin-bottom: 40px;
+    }
+
+    .alert {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border-left: 4px solid;
+      border-radius: 8px;
+      padding: 16px 20px;
+      font-size: 14px;
+    }
+
+    .alert.warning {
+      border-left-color: #fb923c;
+    }
+
+    .alert.info {
+      border-left-color: #3b82f6;
+    }
+
+    .alert.success {
+      border-left-color: #22c55e;
+    }
 
     /* AGENT GRID */
-    .agent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
-    .agent-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px;
-      padding: 14px; text-align: center; transition: border-color 0.2s; cursor: default; }
-    .agent-card:hover { border-color: var(--accent); }
-    .agent-avatar { width: 44px; height: 44px; border-radius: 50%; margin: 0 auto 8px;
-      display: flex; align-items: center; justify-content: center; font-size: 20px; }
-    .agent-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
-    .agent-role { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .agent-status { font-size: 10px; padding: 2px 8px; border-radius: 10px; display: inline-block; }
-    .agent-status.active { background: #052e16; color: var(--accent2); }
-    .agent-status.idle { background: #1c1917; color: var(--accent3); }
+    .agent-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+    }
 
-    /* TABLE */
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th { text-align: left; padding: 10px 12px; color: var(--muted); font-size: 11px;
-      text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
-    td { padding: 10px 12px; border-bottom: 1px solid #1a2030; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(59,130,246,0.04); }
+    .agent-item {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
 
-    /* BADGE */
-    .badge { padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
-    .badge.green { background: #052e16; color: var(--accent2); }
-    .badge.blue { background: #0c1a3a; color: var(--accent); }
-    .badge.yellow { background: #1c1400; color: var(--accent3); }
-    .badge.red { background: #2d0a0a; color: var(--danger); }
-    .badge.gray { background: #1f2937; color: var(--muted); }
+    .agent-item:hover {
+      border-color: #ff8c00;
+      transform: translateY(-2px);
+    }
 
-    /* PROGRESS BAR */
-    .progress-wrap { margin-bottom: 12px; }
-    .progress-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
-    .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
-    .progress-fill { height: 100%; border-radius: 3px; transition: width 0.8s ease; }
+    .agent-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      margin: 0 auto 8px;
+      border: 3px solid;
+    }
 
-    /* PIPELINE */
-    .pipeline { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 24px; }
-    .pipe-col { min-width: 200px; background: var(--card); border: 1px solid var(--border);
-      border-radius: 10px; padding: 14px; }
-    .pipe-col h4 { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase;
-      letter-spacing: 0.5px; margin-bottom: 12px; display: flex; justify-content: space-between; }
-    .pipe-item { background: #0f172a; border: 1px solid var(--border); border-radius: 8px;
-      padding: 10px; margin-bottom: 8px; font-size: 12px; }
-    .pipe-item .name { font-weight: 600; margin-bottom: 2px; }
-    .pipe-item .meta { color: var(--muted); font-size: 11px; }
+    .agent-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+    }
 
-    /* TABS CONTENT */
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+    .agent-role {
+      font-size: 10px;
+      color: #94a3b8;
+    }
 
-    /* ALERT */
-    .alert { background: #1c0a0a; border: 1px solid #7f1d1d; border-radius: 8px;
-      padding: 12px 16px; margin-bottom: 12px; font-size: 13px; display: flex; gap: 10px; align-items: flex-start; }
-    .alert.warning { background: #1c1400; border-color: #78350f; }
-    .alert.info { background: #0c1a3a; border-color: #1e3a8a; }
+    .agent-status {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin: 8px auto 0;
+    }
 
-    /* FOOTER */
-    footer { text-align: center; padding: 24px; color: var(--muted); font-size: 12px;
-      border-top: 1px solid var(--border); margin-top: 40px; }
+    .agent-status.online {
+      background: #22c55e;
+    }
+
+    .agent-status.idle {
+      background: #f59e0b;
+    }
+
+    /* ORG CHART */
+    .org-chart {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+    }
+
+    .org-level {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    .org-box {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 2px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      min-width: 140px;
+      transition: all 0.2s ease;
+    }
+
+    .org-box:hover {
+      border-color: #ff8c00;
+      box-shadow: 0 8px 16px rgba(255, 140, 0, 0.1);
+    }
+
+    .org-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      margin: 0 auto 12px;
+      border: 3px solid;
+    }
+
+    .org-name {
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .org-role {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    /* PROFILE CARDS */
+    .profile-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .profile-card {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .profile-card:hover {
+      border-color: #ff8c00;
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(255, 140, 0, 0.15);
+    }
+
+    .profile-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      margin: 0 auto 16px;
+      border: 4px solid;
+    }
+
+    .profile-name {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .profile-code {
+      font-size: 12px;
+      color: #ff8c00;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .profile-role {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 12px;
+    }
+
+    .profile-engine {
+      font-size: 11px;
+      background: rgba(255, 140, 0, 0.1);
+      color: #ff8c00;
+      padding: 6px 12px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .profile-quote {
+      font-size: 12px;
+      color: #cbd5e1;
+      font-style: italic;
+      border-left: 3px solid #ff8c00;
+      padding-left: 12px;
+      margin-top: 12px;
+    }
+
+    /* ACTIVITY LOG */
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .activity-item {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .activity-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid #ff8c00;
+      flex-shrink: 0;
+    }
+
+    .activity-content {
+      flex: 1;
+    }
+
+    .activity-time {
+      font-size: 11px;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .activity-text {
+      font-size: 14px;
+      color: #e0e7ff;
+      margin-bottom: 4px;
+    }
+
+    .activity-message {
+      font-size: 13px;
+      color: #94a3b8;
+      background: rgba(255, 140, 0, 0.05);
+      padding: 8px 12px;
+      border-radius: 6px;
+      border-left: 2px solid #ff8c00;
+      margin-top: 8px;
+    }
+
+    /* KANBAN */
+    .kanban-board {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .kanban-column {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .kanban-header {
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 12px;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .kanban-count {
+      background: #ff8c00;
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .kanban-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .kanban-card {
+      background: rgba(255, 140, 0, 0.1);
+      border: 1px solid rgba(255, 140, 0, 0.3);
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 12px;
+      color: #e0e7ff;
+    }
+
+    /* TABLES */
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 24px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: rgba(255, 140, 0, 0.05);
+    }
+
+    th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px;
+      color: #ff8c00;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid #334155;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #1e293b;
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+
+    tr:hover {
+      background: rgba(255, 140, 0, 0.05);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-badge.active {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+    }
+
+    .status-badge.pending {
+      background: rgba(251, 146, 60, 0.2);
+      color: #fb923c;
+    }
+
+    .status-badge.complete {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+    }
+
+    /* PROGRESS BARS */
+    .progress-bar {
+      height: 8px;
+      background: #1e293b;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ff8c00, #ffb84d);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    /* METRIC BOXES */
+    .metric-box {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .metric-subtext {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
+  <div class="container">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="logo">GUS SKYY OS <span>v2.0</span></div>
+      <div class="system-status">System Online</div>
 
-<header>
-  <div class="logo">
-    <div class="logo-icon">G</div>
-    <div class="logo-text">
-      <h1>GUS SKYY OS</h1>
-      <p>Mission Control Dashboard</p>
-    </div>
-  </div>
-  <div class="header-right">
-    <span class="status-badge"><span class="live-dot"></span>14 Agents Online</span>
-    <span class="date-time" id="clock">Loading...</span>
-  </div>
-</header>
+      <nav>
+        <div class="nav-section">OVERVIEW</div>
+        <div class="nav-item active" data-page="dashboard">📊 Dashboard</div>
 
-<nav>
-  <button class="active" onclick="showTab('overview',this)">Overview</button>
-  <button onclick="showTab('agents',this)">AI Agents</button>
-  <button onclick="showTab('pipeline',this)">Sales Pipeline</button>
-  <button onclick="showTab('jobs',this)">Active Jobs</button>
-  <button onclick="showTab('finance',this)">Finance</button>
-  <button onclick="showTab('tasks',this)">Task Queue</button>
-</nav>
+        <div class="nav-section">TEAM</div>
+        <div class="nav-item" data-page="orgchart">🏢 Org Chart</div>
+        <div class="nav-item" data-page="profiles">👥 Team Profiles</div>
+        <div class="nav-item" data-page="activity">📋 Activity Log</div>
 
-<main>
+        <div class="nav-section">OPERATIONS</div>
+        <div class="nav-item" data-page="pipeline">🎯 Pipeline</div>
+        <div class="nav-item" data-page="jobs">🏗️ Active Jobs</div>
+        <div class="nav-item" data-page="finance">💰 Finance</div>
 
-  <!-- OVERVIEW TAB -->
-  <div id="overview" class="tab-content active">
-    <div class="kpi-grid">
-      <div class="kpi-card green">
-        <div class="label">Revenue FY25</div>
-        <div class="value">$1.27M</div>
-        <div class="sub">+18.3% profit margin</div>
-      </div>
-      <div class="kpi-card blue">
-        <div class="label">Net Profit FY25</div>
-        <div class="value">$232K</div>
-        <div class="sub">$232,467 confirmed</div>
-      </div>
-      <div class="kpi-card yellow">
-        <div class="label">Active Projects</div>
-        <div class="value">12</div>
-        <div class="sub">NJ Residential</div>
-      </div>
-      <div class="kpi-card blue">
-        <div class="label">AI Agents</div>
-        <div class="value">14</div>
-        <div class="sub">All systems operational</div>
-      </div>
-      <div class="kpi-card green">
-        <div class="label">Leads This Month</div>
-        <div class="value">18+</div>
-        <div class="sub">Via IME Portal</div>
-      </div>
-      <div class="kpi-card red">
-        <div class="label">Critical Alerts</div>
-        <div class="value">5</div>
-        <div class="sub">Require attention</div>
-      </div>
+        <div class="nav-section">SYSTEM</div>
+        <div class="nav-item" data-page="agents">🤖 Agent Status</div>
+        <div class="nav-item" data-page="costs">📉 API Costs</div>
+        <div class="nav-item" data-page="rules">📜 Rules</div>
+        <div class="nav-item" data-page="integrations">🔌 Integrations</div>
+      </nav>
     </div>
 
-    <div class="section-title">Critical Alerts</div>
-    <div class="alert"><span>🔴</span><div><strong>CONST-008 Vitor Nios</strong> — Foundation Maplewood, 7+ weeks no response. Immediate follow-up required.</div></div>
-    <div class="alert warning"><span>🟡</span><div><strong>W-9 Missing</strong> — 13 subcontractors without W-9 on file. Blocks all payments (compliance critical).</div></div>
-    <div class="alert warning"><span>🟡</span><div><strong>Cindy Wint $5,851</strong> — 210 days post-sale, no installation scheduled. HOT issue.</div></div>
-    <div class="alert warning"><span>🟡</span><div><strong>Mercedes Miller $31K</strong> — 100+ days post-sale, no installation. HOT issue.</div></div>
-    <div class="alert info"><span>🔵</span><div><strong>QB-TOKENS</strong> — OAuth2 tokens generated today. Access token expires in 60min. Configure refresh flow.</div></div>
+    <!-- MAIN CONTENT -->
+    <div class="content">
+      <div class="header">
+        <h1 id="page-title">Dashboard</h1>
+        <p id="page-time">Today at 2:34 PM</p>
+      </div>
 
-    <div class="section-title" style="margin-top:24px">Revenue Breakdown</div>
-    <div class="grid-2">
-      <div class="card">
-        <h3>Revenue by Service Line</h3>
-        <div class="progress-wrap">
-          <div class="progress-label"><span>Flooring</span><span style="color:var(--accent2)">$508K (40%)</span></div>
-          <div class="progress-bar"><div class="progress-fill" style="width:40%;background:var(--accent2)"></div></div>
-        </div>
-        <div class="progress-wrap">
-          <div class="progress-label"><span>Cabinets</span><span style="color:var(--accent)">$381K (30%)</span></div>
-          <div class="progress-bar"><div class="progress-fill" style="width:30%;background:var(--accent)"></div></div>
-        </div>
-        <div class="progress-wrap">
-          <div class="progress-label"><span>Construction</span><span style="color:var(--accent3)">$254K (20%)</span></div>
-          <div class="progress-bar"><div class="progress-fill" style="width:20%;background:var(--accent3)"></div></div>
-        </div>
-        <div class="progress-wrap">
-          <div class="progress-label"><span>Other</span><span style="color:var(--muted)">$127K (10%)</span></div>
-          <div class="progress-bar"><div class="progress-fill" style="width:10%;background:var(--muted)"></div></div>
-        </div>
-      </div>
-      <div class="card">
-        <h3>Cost Structure</h3>
-        <div class="progress-wrap">
-          <div class="progress-label"><span>Labor (Subs)</span><span style="color:var(--danger)">$635K (50%)</span></div>
-          <div class="progress-bar"><div class="progress-fill" style="width:50%;background:var(--danger)"></div></div>
-        </div>
-        <div class="progress-wrap">
-          <div class="progress-label"><span>Materials</span><span style="color:var(--accent3)">$254K (20%)</span></div>
-          <div class="progress-bar"><div class="progress-fill" style="width:20%;background:var(--accent3)"></div></div>
-        </div>
-        <div class="progress-wrap">
-          <div class="progress-label"><span>F&D (15%)</span><span style="color:var(--accent)">$191K (15%)</span></div>
-          <div class="progress-bar"><div class="progress-fill" style="width:15%;background:var(--accent)"></div></div>
-        </div>
-        <div class="progress-wrap">
-          <div class="progress-label"><span>NJ Tax (6.625%)</span><span style="color:var(--muted)">$84K (6.6%)</span></div>
-          <div class="progress-bar"><div class="progress-fill" style="width:6.6%;background:var(--muted)"></div></div>
-        </div>
-      </div>
-    </div>
-  </div>
+      <div class="main-area">
+        <!-- DASHBOARD PAGE -->
+        <div class="page active" id="dashboard">
+          <div class="kpi-grid">
+            <div class="kpi-card"><div class="kpi-label">Total Revenue</div><div class="kpi-value">$1.27M</div><div class="kpi-trend up">↑ 12.5% this month</div></div>
+            <div class="kpi-card"><div class="kpi-label">Active Projects</div><div class="kpi-value">23</div><div class="kpi-trend up">↑ 5 new this week</div></div>
+            <div class="kpi-card"><div class="kpi-label">Team Efficiency</div><div class="kpi-value">94%</div><div class="kpi-trend up">↑ 3.2% vs last week</div></div>
+            <div class="kpi-card"><div class="kpi-label">Pipeline Value</div><div class="kpi-value">$4.2M</div><div class="kpi-trend up">↑ 8.9% this month</div></div>
+            <div class="kpi-card"><div class="kpi-label">Customer Satisfaction</div><div class="kpi-value">4.8/5</div><div class="kpi-trend up">↑ 0.3 points</div></div>
+            <div class="kpi-card"><div class="kpi-label">Completion Rate</div><div class="kpi-value">89%</div><div class="kpi-trend down">↓ 2.1% vs last week</div></div>
+            <div class="kpi-card"><div class="kpi-label">AI Agent Uptime</div><div class="kpi-value">99.8%</div><div class="kpi-trend up">↑ Excellent</div></div>
+          </div>
 
-  <!-- AGENTS TAB -->
-  <div id="agents" class="tab-content">
-    <div class="section-title">14 Active AI Agents</div>
-    <div class="agent-grid">
-      <div class="agent-card">
-        <div class="agent-avatar" style="background:#1e3a5f">🧠</div>
-        <div class="agent-name">RADAR</div>
-        <div class="agent-role">COO / Orchestrator</div>
-        <span class="agent-status active">Active</span>
-      </div>
-      <div class="agent-card">
-        <div class="agent-avatar" style="background:#1a2e1a">💰</div>
-        <div class="agent-name">LEDGER</div>
-        <div class="agent-role">CFO / Finance</div>
-        <span class="agent-status active">Active</span>
-      </div>
-      <div class="agent-card">
-        <div class="agent-avatar" style="background:#2d1a00">🔨</div>
-        <div class="agent-name">FORGE</div>
-        <div class="agent-role">COO / Field Ops</div>
-        <span class="agent-status active">Active</span>
-      </div>
-      <div class="agent-card">
-        <div class="agent-avatar" style="background:#1a0a2e">🎯</div>
-        <div class="agent-name">NOVA</div>
-        <div class="agent-role">CMO / Marketing</div>
-        <span class="agent-status active">Active</span>
-      </div>
-      <div class="agent-card">
-        <div class="agent-avatar" style="background:#1a2e1a">🤝</div>
-        <div class="agent-name">NEXUS</div>
-        <div class="agent-role">CRO / Sales</div>
-        <span class="agent-status active">Active</span>
-      </div>
-      <div class="agent-card">
-        <div class="agent-avatar" style="background:#2d1a00">⚖️</div>
-        <div class="agent-name">SHIELD</div>
-        <div class="agent-role">CLO / Legal</div>
-        <span class="agent-status active">Active</span>
-      </div>
-      <div class="agent-card">
-        <div class="agent-avatar" style="background:#1e3a5f">👥</div>
-        <div class="agent-name">PULSE</div>
-        <div class="agent-role">CHRO / HR</div>
-        <span class="agent-status active">Active</span>
-      </div>
-      <div class="agent-card">
-        <div class="agent-avatar" style="background:#1a0a2e">🔧</div>
-        <div class="agent-name">CORE</div>
-        <div class="agent-role">CTO / Tech</div>
-        <span class="agent-status active">Active</span>
-      </div>
-      <div class="agent-card">
-        <div class="agent-avatar" style="background:#1a2e1a">📊</div>
-        <div class="agent-name">ATLAS</div>
-        <div class="agent-role">CIO / Data</div>
-        <span class="agent-status active">Active</span>
-      </div>
-      <div class="agent-card">
-        <div class="agent-avatar" style="background:#2d1a00">🎨</div>
-        <div class="agent-name">SPARK</div>
-        <div class="agent-role">CCO / Creative</div>
-        <span class="agent-status active">Active</span>
-      </div>
-      <div class="agent-card">
-        <div class="agent-avatar" style="background:#1e3a5f">🌐</div>
-        <div class="agent-name">SCOUT</div>
-        <div class="agent-role">Chief Strategy</div>
-        <span class="agent-status active">Active</span>
-      </div>
-      <div class="agent-card">
-        <div class="agent-avatar" style="background:#1a0a2e">📦</div>
-        <div class="agent-name">DEPOT</div>
-        <div class="agent-role">CPO / Procurement</div>
-        <span class="agent-status active">Active</span>
-      </div>
-      <div class="agent-card">
-        <div class="agent-avatar" style="background:#1a2e1a">🏗️</div>
-        <div class="agent-name">BUILD</div>
-        <div class="agent-role">CQO / Quality</div>
-        <span class="agent-status active">Active</span>
-      </div>
-      <div class="agent-card">
-        <div class="agent-avatar" style="background:#2d1a00">🤖</div>
-        <div class="agent-name">MANUS</div>
-        <div class="agent-role">Browser / Automation</div>
-        <span class="agent-status active">Active</span>
-      </div>
-    </div>
-  </div>
+          <div class="charts-grid">
+            <div class="chart-card"><h3>Pipeline Forecast</h3><canvas id="pipeline-chart"></canvas></div>
+            <div class="chart-card"><h3>Service Distribution</h3><canvas id="service-chart"></canvas></div>
+          </div>
 
-  <!-- PIPELINE TAB -->
-  <div id="pipeline" class="tab-content">
-    <div class="section-title">Sales Pipeline — IME Portal Sync</div>
-    <div class="pipeline">
-      <div class="pipe-col">
-        <h4>New Leads <span class="badge blue">18</span></h4>
-        <div class="pipe-item">
-          <div class="name">Jennifer Hoyer</div>
-          <div class="meta">Flooring · WO#40291076 · Wallace</div>
-        </div>
-        <div class="pipe-item">
-          <div class="name">Pablo Andino</div>
-          <div class="meta">Cabinets · WO#40267821</div>
-        </div>
-        <div class="pipe-item">
-          <div class="name">Sivaprakash S.</div>
-          <div class="meta">Cabinets · WO#40264539</div>
-        </div>
-        <div class="pipe-item">
-          <div class="name">Ujjwal Sinha</div>
-          <div class="meta">Cabinets · WO#39699292</div>
-        </div>
-      </div>
-      <div class="pipe-col">
-        <h4>Appt Pending <span class="badge yellow">8</span></h4>
-        <div class="pipe-item">
-          <div class="name">Cindy Wint</div>
-          <div class="meta">Flooring · $5,851 · 210 days</div>
-        </div>
-        <div class="pipe-item">
-          <div class="name">Mercedes Miller</div>
-          <div class="meta">Construction · $31K · 100 days</div>
-        </div>
-      </div>
-      <div class="pipe-col">
-        <h4>In Progress <span class="badge blue">5</span></h4>
-        <div class="pipe-item">
-          <div class="name">CONST-008</div>
-          <div class="meta">Foundation Maplewood · Vitor Nios</div>
-        </div>
-        <div class="pipe-item">
-          <div class="name">GS-554 Maplewood</div>
-          <div class="meta">Active Job</div>
-        </div>
-        <div class="pipe-item">
-          <div class="name">GS-Hedden Newark</div>
-          <div class="meta">Active Job</div>
-        </div>
-      </div>
-      <div class="pipe-col">
-        <h4>Completed <span class="badge green">3</span></h4>
-        <div class="pipe-item">
-          <div class="name">GS-Foundation</div>
-          <div class="meta">Closed · Paid</div>
-        </div>
-      </div>
-    </div>
-  </div>
+          <div class="alerts-grid">
+            <div class="alert warning"><strong>⚠️ Alert:</strong> HUNTER (Marcus Reed) flagged 3 deals requiring manager review</div>
+            <div class="alert info"><strong>ℹ️ Info:</strong> FOREMAN completed 7 site inspections - 2 jobs ready for design</div>
+            <div class="alert success"><strong>✓ Success:</strong> Financial reconciliation complete - all Q1 expenses approved</div>
+          </div>
 
-  <!-- JOBS TAB -->
-  <div id="jobs" class="tab-content">
-    <div class="section-title">Active Construction Jobs</div>
-    <div class="card">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Job ID</th><th>Client</th><th>Type</th><th>Status</th><th>Value</th><th>Days Active</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>CONST-008</td><td>Vitor Nios</td><td>Foundation</td><td><span class="badge red">Critical</span></td><td>—</td><td>49+</td></tr>
-            <tr><td>GS-554</td><td>554 Maplewood</td><td>Renovation</td><td><span class="badge blue">Active</span></td><td>—</td><td>—</td></tr>
-            <tr><td>GS-HED</td><td>Hedden Newark</td><td>Renovation</td><td><span class="badge blue">Active</span></td><td>—</td><td>—</td></tr>
-            <tr><td>GS-FND</td><td>Foundation</td><td>Construction</td><td><span class="badge green">Complete</span></td><td>—</td><td>—</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+          <div><h3 style="margin-bottom: 20px; font-size: 16px; font-weight: 600;">Agent Status Overview</h3>
+            <div class="agent-grid">
+              <div class="agent-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=RaySantos&backgroundColor=b6e3f4" class="agent-avatar" style="border-color: #00d4ff;"><div class="agent-name">Ray Santos</div><div class="agent-role">RADAR - COO</div><div class="agent-status online"></div></div>
+              <div class="agent-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=MarcusReed&backgroundColor=b6e3f4" class="agent-avatar" style="border-color: #ff6b35;"><div class="agent-name">Marcus Reed</div><div class="agent-role">HUNTER - VP Sales</div><div class="agent-status online"></div></div>
+              <div class="agent-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TonySilva&backgroundColor=b6e3f4" class="agent-avatar" style="border-color: #22c55e;"><div class="agent-name">Tony Silva</div><div class="agent-role">FOREMAN - Field Ops</div><div class="agent-status online"></div></div>
+              <div class="agent-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=AlexChen&backgroundColor=b6e3f4" class="agent-avatar" style="border-color: #3b82f6;"><div class="agent-name">Alex Chen</div><div class="agent-role">BRIDGE - Integration</div><div class="agent-status idle"></div></div>
+              <div class="agent-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=VictoriaGoldman&backgroundColor=b6e3f4" class="agent-avatar" style="border-color: #eab308;"><div class="agent-name">Victoria Goldman</div><div class="agent-role">VAULT - CFO</div><div class="agent-status online"></div></div>
+              <div class="agent-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=NathanPatel&backgroundColor=b6e3f4" class="agent-avatar" style="border-color: #94a3b8;"><div class="agent-name">Nathan Patel</div><div class="agent-role">LENS - Analytics</div><div class="agent-status idle"></div></div>
+              <div class="agent-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=DianaBooks&backgroundColor=b6e3f4" class="agent-avatar" style="border-color: #818cf8;"><div class="agent-name">Diana Brooks</div><div class="agent-role">SCRIBE - Legal</div><div class="agent-status idle"></div></div>
+              <div class="agent-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=MaxTorres&backgroundColor=b6e3f4" class="agent-avatar" style="border-color: #a78bfa;"><div class="agent-name">Max Torres</div><div class="agent-role">STAMP - Template</div><div class="agent-status idle"></div></div>
+              <div class="agent-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=ClaraKim&backgroundColor=b6e3f4" class="agent-avatar" style="border-color: #86efac;"><div class="agent-name">Clara Kim</div><div class="agent-role">TIDY - Office Mgr</div><div class="agent-status idle"></div></div>
+              <div class="agent-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=SofiaReyes&backgroundColor=b6e3f4" class="agent-avatar" style="border-color: #fb923c;"><div class="agent-name">Sofia Reyes</div><div class="agent-role">SPARK - Marketing</div><div class="agent-status idle"></div></div>
+              <div class="agent-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=VictorDrake&backgroundColor=b6e3f4" class="agent-avatar" style="border-color: #ef4444;"><div class="agent-name">Victor Drake</div><div class="agent-role">HAWK - Compliance</div><div class="agent-status online"></div></div>
+              <div class="agent-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=RobertoCosta&backgroundColor=b6e3f4" class="agent-avatar" style="border-color: #f59e0b;"><div class="agent-name">Roberto Costa</div><div class="agent-role">CHIEF - HR Director</div><div class="agent-status online"></div></div>
+              <div class="agent-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=KaiNakamura&backgroundColor=b6e3f4" class="agent-avatar" style="border-color: #a855f7;"><div class="agent-name">Kai Nakamura</div><div class="agent-role">DARWIN - CTO</div><div class="agent-status idle"></div></div>
+              <div class="agent-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=OliviaHart&backgroundColor=b6e3f4" class="agent-avatar" style="border-color: #14b8a6;"><div class="agent-name">Olivia Hart</div><div class="agent-role">SCOUT - Strategy</div><div class="agent-status idle"></div></div>
+            </div>
+          </div>
+        </div>
 
-  <!-- FINANCE TAB -->
-  <div id="finance" class="tab-content">
-    <div class="kpi-grid">
-      <div class="kpi-card green">
-        <div class="label">Total Revenue FY25</div>
-        <div class="value">$1.27M</div>
-        <div class="sub">$1,270,989</div>
-      </div>
-      <div class="kpi-card blue">
-        <div class="label">Net Profit</div>
-        <div class="value">$232K</div>
-        <div class="sub">18.3% margin</div>
-      </div>
-      <div class="kpi-card yellow">
-        <div class="label">QuickBooks</div>
-        <div class="value">OAuth2</div>
-        <div class="sub">Tokens active — sandbox</div>
-      </div>
-      <div class="kpi-card red">
-        <div class="label">W-9 Missing</div>
-        <div class="value">13</div>
-        <div class="sub">Subcontractors</div>
-      </div>
-    </div>
-    <div class="section-title">QuickBooks Integration Status</div>
-    <div class="alert info">
-      <span>🔵</span>
-      <div>
-        <strong>OAuth2 Tokens Generated — 2026-03-21</strong><br>
-        Environment: Sandbox · Realm ID: 9341455667906253<br>
-        Access Token: expires in ~60min · Refresh Token: expires 2026-06-30<br>
-        Scope: com.intuit.quickbooks.accounting
+        <!-- ORG CHART PAGE -->
+        <div class="page" id="orgchart">
+          <div class="org-chart">
+            <div class="org-level">
+              <div class="org-box">
+                <img src="https://api.dicebear.com/7.x/lorelei/svg?seed=GustavoFerreira&backgroundColor=ffd700" class="org-avatar" style="border-color: #ffd700;">
+                <div class="org-name">Gustavo Ferreira</div>
+                <div class="org-role">CEO</div>
+              </div>
+            </div>
+            <div class="org-level">
+              <div class="org-box">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=RaySantos&backgroundColor=b6e3f4" class="org-avatar" style="border-color: #00d4ff;">
+                <div class="org-name">Ray Santos</div>
+                <div class="org-role">RADAR - COO</div>
+              </div>
+            </div>
+            <div class="org-level" style="max-width: 1200px;">
+              <div class="org-box"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=MarcusReed&backgroundColor=b6e3f4" class="org-avatar" style="border-color: #ff6b35;"><div class="org-name">Marcus Reed</div><div class="org-role">HUNTER - VP Sales</div></div>
+              <div class="org-box"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TonySilva&backgroundColor=b6e3f4" class="org-avatar" style="border-color: #22c55e;"><div class="org-name">Tony Silva</div><div class="org-role">FOREMAN - Field Ops</div></div>
+              <div class="org-box"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=VictoriaGoldman&backgroundColor=b6e3f4" class="org-avatar" style="border-color: #eab308;"><div class="org-name">Victoria Goldman</div><div class="org-role">VAULT - CFO</div></div>
+              <div class="org-box"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=KaiNakamura&backgroundColor=b6e3f4" class="org-avatar" style="border-color: #a855f7;"><div class="org-name">Kai Nakamura</div><div class="org-role">DARWIN - CTO</div></div>
+              <div class="org-box"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=RobertoCosta&backgroundColor=b6e3f4" class="org-avatar" style="border-color: #f59e0b;"><div class="org-name">Roberto Costa</div><div class="org-role">CHIEF - HR</div></div>
+              <div class="org-box"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=OliviaHart&backgroundColor=b6e3f4" class="org-avatar" style="border-color: #14b8a6;"><div class="org-name">Olivia Hart</div><div class="org-role">SCOUT - Strategy</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TEAM PROFILES PAGE -->
+        <div class="page" id="profiles">
+          <div class="profile-grid">
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/lorelei/svg?seed=GustavoFerreira&backgroundColor=ffd700" class="profile-avatar" style="border-color: #ffd700;"><div class="profile-name">Gustavo Ferreira</div><div class="profile-role">CEO</div><div class="profile-code">HUMAN</div><div class="profile-engine">Executive</div><div class="profile-quote">"Vision and execution - that's what builds empires."</div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/lorelei/svg?seed=Wallace&backgroundColor=ff8c00" class="profile-avatar" style="border-color: #ff8c00;"><div class="profile-name">Wallace</div><div class="profile-role">Field Sales</div><div class="profile-code">HUMAN</div><div class="profile-engine">Sales</div><div class="profile-quote">"Every job is a chance to build trust."</div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/lorelei/svg?seed=Jennifer&backgroundColor=ff7f50" class="profile-avatar" style="border-color: #ff7f50;"><div class="profile-name">Jennifer</div><div class="profile-role">Design</div><div class="profile-code">HUMAN</div><div class="profile-engine">Creative</div><div class="profile-quote">"Great design transforms spaces."</div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/lorelei/svg?seed=Edivania&backgroundColor=ffd700" class="profile-avatar" style="border-color: #ffd700;"><div class="profile-name">Edivania</div><div class="profile-role">Finance</div><div class="profile-code">HUMAN</div><div class="profile-engine">Accounting</div><div class="profile-quote">"Numbers tell the story of success."</div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=RaySantos&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #00d4ff;"><div class="profile-name">Ray Santos</div><div class="profile-code">RADAR</div><div class="profile-role">Chief Operating Officer</div><div class="profile-engine">Claude 3.5 Sonnet</div><div class="profile-quote">"Strategic oversight keeps everything aligned."</div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=MarcusReed&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #ff6b35;"><div class="profile-name">Marcus Reed</div><div class="profile-code">HUNTER</div><div class="profile-role">VP Sales & Partnerships</div><div class="profile-engine">Claude 3.5 Sonnet</div><div class="profile-quote">"Closing deals builds momentum."</div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TonySilva&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #22c55e;"><div class="profile-name">Tony Silva</div><div class="profile-code">FOREMAN</div><div class="profile-role">Director Field Operations</div><div class="profile-engine">Claude 3.5 Sonnet</div><div class="profile-quote">"Quality in every detail, respect on site."</div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=AlexChen&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #3b82f6;"><div class="profile-name">Alex Chen</div><div class="profile-code">BRIDGE</div><div class="profile-role">Integration Engineer</div><div class="profile-engine">Claude 3.5 Sonnet</div><div class="profile-quote">"Seamless systems enable workflows."</div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=VictoriaGoldman&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #eab308;"><div class="profile-name">Victoria Goldman</div><div class="profile-code">VAULT</div><div class="profile-role">Chief Financial Officer</div><div class="profile-engine">Claude 3.5 Sonnet</div><div class="profile-quote">"Financial discipline drives growth."</div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=NathanPatel&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #94a3b8;"><div class="profile-name">Nathan Patel</div><div class="profile-code">LENS</div><div class="profile-role">Head Analytics</div><div class="profile-engine">Claude 3.5 Sonnet</div><div class="profile-quote">"Data reveals hidden patterns."</div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=DianaBooks&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #818cf8;"><div class="profile-name">Diana Brooks</div><div class="profile-code">SCRIBE</div><div class="profile-role">Legal & Documents</div><div class="profile-engine">Claude 3.5 Sonnet</div><div class="profile-quote">"Documentation protects and clarifies."</div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=MaxTorres&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #a78bfa;"><div class="profile-name">Max Torres</div><div class="profile-code">STAMP</div><div class="profile-role">Template Engineer</div><div class="profile-engine">Claude 3.5 Sonnet</div><div class="profile-quote">"Templates multiply productivity."</div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=ClaraKim&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #86efac;"><div class="profile-name">Clara Kim</div><div class="profile-code">TIDY</div><div class="profile-role">Office Manager</div><div class="profile-engine">Claude 3.5 Sonnet</div><div class="profile-quote">"Organization enables excellence."</div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=SofiaReyes&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #fb923c;"><div class="profile-name">Sofia Reyes</div><div class="profile-code">SPARK</div><div class="profile-role">Marketing Director</div><div class="profile-engine">Claude 3.5 Sonnet</div><div class="profile-quote">"Great marketing tells your story."</div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=VictorDrake&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #ef4444;"><div class="profile-name">Victor Drake</div><div class="profile-code">HAWK</div><div class="profile-role">Compliance Director</div><div class="profile-engine">Claude 3.5 Sonnet</div><div class="profile-quote">"Compliance protects the company."</div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=RobertoCosta&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #f59e0b;"><div class="profile-name">Roberto Costa</div><div class="profile-code">CHIEF</div><div class="profile-role">HR Director</div><div class="profile-engine">Claude 3.5 Sonnet</div><div class="profile-quote">"Great people build great companies."</div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=KaiNakamura&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #a855f7;"><div class="profile-name">Kai Nakamura</div><div class="profile-code">DARWIN</div><div class="profile-role">Chief Technology Officer</div><div class="profile-engine">Claude 3.5 Sonnet</div><div class="profile-quote">"Technology evolves, principles endure."</div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=OliviaHart&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #14b8a6;"><div class="profile-name">Olivia Hart</div><div class="profile-code">SCOUT</div><div class="profile-role">Strategy Chief</div><div class="profile-engine">Claude 3.5 Sonnet</div><div class="profile-quote">"Vision becomes reality through strategy."</div></div>
+          </div>
+        </div>
+
+        <!-- ACTIVITY LOG PAGE -->
+        <div class="page" id="activity">
+          <div class="activity-list">
+            <div class="activity-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=RaySantos&backgroundColor=b6e3f4" class="activity-avatar" style="border-color: #00d4ff;"><div class="activity-content"><div class="activity-time">Today 2:34 PM</div><div class="activity-text"><strong>Ray Santos</strong> (RADAR) delegated to Marcus Reed</div><div class="activity-message">"Review Q2 partnership pipeline - prioritize enterprise deals"</div></div></div>
+            <div class="activity-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=MarcusReed&backgroundColor=b6e3f4" class="activity-avatar" style="border-color: #ff6b35;"><div class="activity-content"><div class="activity-time">Today 2:18 PM</div><div class="activity-text"><strong>Marcus Reed</strong> (HUNTER) sent update to Gustavo</div><div class="activity-message">"Tres deals em final stage - esperado fechar $340K proxima semana"</div></div></div>
+            <div class="activity-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TonySilva&backgroundColor=b6e3f4" class="activity-avatar" style="border-color: #22c55e;"><div class="activity-content"><div class="activity-time">Today 1:45 PM</div><div class="activity-text"><strong>Tony Silva</strong> (FOREMAN) completed inspections</div><div class="activity-message">"7 residential jobs inspected - 2 ready for design phase"</div></div></div>
+            <div class="activity-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=VictoriaGoldman&backgroundColor=b6e3f4" class="activity-avatar" style="border-color: #eab308;"><div class="activity-content"><div class="activity-time">Today 1:22 PM</div><div class="activity-text"><strong>Victoria Goldman</strong> (VAULT) approved expenses</div><div class="activity-message">"Q1 reconciliation complete - profit margin: 18.3%"</div></div></div>
+            <div class="activity-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=AlexChen&backgroundColor=b6e3f4" class="activity-avatar" style="border-color: #3b82f6;"><div class="activity-content"><div class="activity-time">Today 12:56 PM</div><div class="activity-text"><strong>Alex Chen</strong> (BRIDGE) updated integrations</div><div class="activity-message">"CRM sync upgraded - API response time improved by 35%"</div></div></div>
+            <div class="activity-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=NathanPatel&backgroundColor=b6e3f4" class="activity-avatar" style="border-color: #94a3b8;"><div class="activity-content"><div class="activity-time">Today 12:30 PM</div><div class="activity-text"><strong>Nathan Patel</strong> (LENS) generated analytics</div><div class="activity-message">"CAC down 12% - retention rate stable at 91%"</div></div></div>
+            <div class="activity-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=DianaBooks&backgroundColor=b6e3f4" class="activity-avatar" style="border-color: #818cf8;"><div class="activity-content"><div class="activity-time">Today 11:45 AM</div><div class="activity-text"><strong>Diana Brooks</strong> (SCRIBE) processed contracts</div><div class="activity-message">"3 service contracts finalized - all compliance met"</div></div></div>
+            <div class="activity-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=VictorDrake&backgroundColor=b6e3f4" class="activity-avatar" style="border-color: #ef4444;"><div class="activity-content"><div class="activity-time">Today 11:20 AM</div><div class="activity-text"><strong>Victor Drake</strong> (HAWK) verified compliance</div><div class="activity-message">"All projects 100% NJ compliant - safety standards met"</div></div></div>
+            <div class="activity-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=SofiaReyes&backgroundColor=b6e3f4" class="activity-avatar" style="border-color: #fb923c;"><div class="activity-content"><div class="activity-time">Today 10:50 AM</div><div class="activity-text"><strong>Sofia Reyes</strong> (SPARK) launched campaign</div><div class="activity-message">"Spring campaign live - 2000 impressions/day"</div></div></div>
+            <div class="activity-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=MaxTorres&backgroundColor=b6e3f4" class="activity-avatar" style="border-color: #a78bfa;"><div class="activity-content"><div class="activity-time">Today 10:15 AM</div><div class="activity-text"><strong>Max Torres</strong> (STAMP) updated templates</div><div class="activity-message">"Proposal template v2.4 deployed with ROI calculator"</div></div></div>
+            <div class="activity-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=RobertoCosta&backgroundColor=b6e3f4" class="activity-avatar" style="border-color: #f59e0b;"><div class="activity-content"><div class="activity-time">Today 9:30 AM</div><div class="activity-text"><strong>Roberto Costa</strong> (CHIEF) onboarded team member</div><div class="activity-message">"2 instaladores experientes agregando a equipe"</div></div></div>
+            <div class="activity-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=ClaraKim&backgroundColor=b6e3f4" class="activity-avatar" style="border-color: #86efac;"><div class="activity-content"><div class="activity-time">Today 9:05 AM</div><div class="activity-text"><strong>Clara Kim</strong> (TIDY) organized schedule</div><div class="activity-message">"Weekly stand-up rescheduled - all 14 agents confirmed"</div></div></div>
+            <div class="activity-item"><img src="https://api.dicebear.com/7.x/lorelei/svg?seed=Wallace&backgroundColor=ff8c00" class="activity-avatar" style="border-color: #ff8c00;"><div class="activity-content"><div class="activity-time">Yesterday 4:20 PM</div><div class="activity-text"><strong>Wallace</strong> (Human) closed deal</div><div class="activity-message">"Master bath remodel - $85K contract signed"</div></div></div>
+            <div class="activity-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=KaiNakamura&backgroundColor=b6e3f4" class="activity-avatar" style="border-color: #a855f7;"><div class="activity-content"><div class="activity-time">Yesterday 3:45 PM</div><div class="activity-text"><strong>Kai Nakamura</strong> (DARWIN) optimized infrastructure</div><div class="activity-message">"Load balanced - response time reduced to 1.2 seconds"</div></div></div>
+            <div class="activity-item"><img src="https://api.dicebear.com/7.x/lorelei/svg?seed=Jennifer&backgroundColor=ff7f50" class="activity-avatar" style="border-color: #ff7f50;"><div class="activity-content"><div class="activity-time">Yesterday 2:30 PM</div><div class="activity-text"><strong>Jennifer</strong> (Human) completed designs</div><div class="activity-message">"3 residential designs ready for client review"</div></div></div>
+            <div class="activity-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=OliviaHart&backgroundColor=b6e3f4" class="activity-avatar" style="border-color: #14b8a6;"><div class="activity-content"><div class="activity-time">Yesterday 1:00 PM</div><div class="activity-text"><strong>Olivia Hart</strong> (SCOUT) presented strategy</div><div class="activity-message">"Q2 analysis complete - expand kitchen remodeling"</div></div></div>
+            <div class="activity-item"><img src="https://api.dicebear.com/7.x/lorelei/svg?seed=Edivania&backgroundColor=ffd700" class="activity-avatar" style="border-color: #ffd700;"><div class="activity-content"><div class="activity-time">March 20, 11:15 AM</div><div class="activity-text"><strong>Edivania</strong> (Human) processed payroll</div><div class="activity-message">"March payroll complete - all records updated"</div></div></div>
+            <div class="activity-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=MarcusReed&backgroundColor=b6e3f4" class="activity-avatar" style="border-color: #ff6b35;"><div class="activity-content"><div class="activity-time">March 20, 10:00 AM</div><div class="activity-text"><strong>Marcus Reed</strong> (HUNTER) analyzed conversions</div><div class="activity-message">"Kitchen conversions down 8% - recommend pricing update"</div></div></div>
+            <div class="activity-item"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=RaySantos&backgroundColor=b6e3f4" class="activity-avatar" style="border-color: #00d4ff;"><div class="activity-content"><div class="activity-time">March 19, 3:30 PM</div><div class="activity-text"><strong>Ray Santos</strong> (RADAR) reviewed ops</div><div class="activity-message">"Weekly review complete - all KPIs green at 94%"</div></div></div>
+          </div>
+        </div>
+
+        <!-- PIPELINE PAGE -->
+        <div class="page" id="pipeline">
+          <div style="margin-bottom: 30px;">
+            <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px;">Pipeline Statistics</h3>
+            <div class="kpi-grid">
+              <div class="kpi-card"><div class="kpi-label">Total Opportunities</div><div class="kpi-value">88</div><div class="kpi-trend up">↑ 12 this month</div></div>
+              <div class="kpi-card"><div class="kpi-label">Pipeline Value</div><div class="kpi-value">$4.2M</div><div class="kpi-trend up">↑ 8.9% vs last month</div></div>
+              <div class="kpi-card"><div class="kpi-label">Close Rate</div><div class="kpi-value">24%</div><div class="kpi-trend down">↓ 2% vs target</div></div>
+              <div class="kpi-card"><div class="kpi-label">Avg Deal Size</div><div class="kpi-value">$47.7K</div><div class="kpi-trend up">↑ 3.2% growth</div></div>
+            </div>
+          </div>
+          <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 20px;">Pipeline Kanban</h3>
+          <div class="kanban-board">
+            <div class="kanban-column"><div class="kanban-header"><span>New Leads</span><span class="kanban-count">7</span></div><div class="kanban-cards"><div class="kanban-card">Johnson Kitchen</div><div class="kanban-card">Williams Bathroom</div><div class="kanban-card">Chen Deck Project</div><div class="kanban-card">Martinez Basement</div><div class="kanban-card">Anderson Roof</div><div class="kanban-card">Pierce Foundation</div><div class="kanban-card">Sullivan Siding</div></div></div>
+            <div class="kanban-column"><div class="kanban-header"><span>Appointment Set</span><span class="kanban-count">7</span></div><div class="kanban-cards"><div class="kanban-card">Brown Kitchen</div><div class="kanban-card">Davis Pool Deck</div><div class="kanban-card">Garcia Walkway</div><div class="kanban-card">Miller Patio</div><div class="kanban-card">Moore Gutters</div><div class="kanban-card">Nelson Windows</div><div class="kanban-card">Thomas Doors</div></div></div>
+            <div class="kanban-column"><div class="kanban-header"><span>Consultation</span><span class="kanban-count">61</span></div><div class="kanban-cards"><div class="kanban-card">Murphy Kitchen - $78K</div><div class="kanban-card">West Bathroom - $45K</div><div class="kanban-card">Adams Living Room</div><div class="kanban-card">Hall Master Suite</div><div class="kanban-card">Young Bedroom</div><div style="color: #94a3b8; font-size: 12px;">+ 56 more deals</div></div></div>
+            <div class="kanban-column"><div class="kanban-header"><span>Design Phase</span><span class="kanban-count">6</span></div><div class="kanban-cards"><div class="kanban-card">Patterson - $85K</div><div class="kanban-card">Spencer - $52K</div><div class="kanban-card">Perry - $18K</div><div class="kanban-card">Grant - $67K</div><div class="kanban-card">Green - $42K</div><div class="kanban-card">Hill - $125K</div></div></div>
+            <div class="kanban-column"><div class="kanban-header"><span>Sale Phase</span><span class="kanban-count">4</span></div><div class="kanban-cards"><div class="kanban-card">Wilson - $85K</div><div class="kanban-card">Taylor - $92K</div><div class="kanban-card">Roberts - $110K</div><div class="kanban-card">Phillips - $48K</div></div></div>
+            <div class="kanban-column"><div class="kanban-header"><span>Installation</span><span class="kanban-count">3</span></div><div class="kanban-cards"><div class="kanban-card">Foster Kitchen</div><div class="kanban-card">Harris Bathroom</div><div class="kanban-card">Martin Exterior</div></div></div>
+          </div>
+        </div>
+
+        <!-- ACTIVE JOBS PAGE -->
+        <div class="page" id="jobs">
+          <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 20px;">Active Projects</h3>
+          <div style="margin-bottom: 40px;">
+            <div class="metric-box"><div class="metric-label">Foster Residence - Kitchen</div><div class="metric-value">$87,500</div><div class="metric-subtext">Started Mar 15 - 3 weeks remaining - 65% complete</div><div class="progress-bar"><div class="progress-fill" style="width: 65%;"></div></div></div>
+            <div class="metric-box"><div class="metric-label">Harris Family - Master Bath</div><div class="metric-value">$52,300</div><div class="metric-subtext">Started Mar 10 - 2 weeks remaining - 80% complete</div><div class="progress-bar"><div class="progress-fill" style="width: 80%;"></div></div></div>
+            <div class="metric-box"><div class="metric-label">Martin Commercial - Exterior</div><div class="metric-value">$156,000</div><div class="metric-subtext">Started Mar 1 - 6 weeks remaining - 45% complete</div><div class="progress-bar"><div class="progress-fill" style="width: 45%;"></div></div></div>
+          </div>
+          <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px;">Compliance Status</h3>
+          <div class="table-container">
+            <table><thead><tr><th>Project</th><th>Permits</th><th>Inspections</th><th>Safety</th><th>Insurance</th><th>Status</th></tr></thead><tbody><tr><td>Foster Kitchen</td><td><span class="status-badge complete">Approved</span></td><td><span class="status-badge complete">Passed</span></td><td><span class="status-badge complete">Valid</span></td><td><span class="status-badge complete">Active</span></td><td><span class="status-badge active">On Track</span></td></tr><tr><td>Harris Bathroom</td><td><span class="status-badge complete">Approved</span></td><td><span class="status-badge pending">Scheduled</span></td><td><span class="status-badge complete">Valid</span></td><td><span class="status-badge complete">Active</span></td><td><span class="status-badge active">On Track</span></td></tr><tr><td>Martin Exterior</td><td><span class="status-badge complete">Approved</span></td><td><span class="status-badge pending">In Progress</span></td><td><span class="status-badge complete">Valid</span></td><td><span class="status-badge complete">Active</span></td><td><span class="status-badge active">On Track</span></td></tr></tbody></table>
+          </div>
+        </div>
+
+        <!-- FINANCE PAGE -->
+        <div class="page" id="finance">
+          <div class="kpi-grid">
+            <div class="kpi-card"><div class="kpi-label">Total Revenue</div><div class="kpi-value">$1.27M</div><div class="kpi-trend up">↑ 12.5% this quarter</div></div>
+            <div class="kpi-card"><div class="kpi-label">Gross Profit</div><div class="kpi-value">$232K</div><div class="kpi-trend up">18.3% margin</div></div>
+            <div class="kpi-card"><div class="kpi-label">Operating Expenses</div><div class="kpi-value">$187K</div><div class="kpi-trend down">14.7% of revenue</div></div>
+            <div class="kpi-card"><div class="kpi-label">Net Profit</div><div class="kpi-value">$45K</div><div class="kpi-trend up">3.5% net margin</div></div>
+          </div>
+          <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; margin-top: 30px;">Revenue Breakdown</h3>
+          <div class="table-container">
+            <table><thead><tr><th>Category</th><th>Jobs</th><th>Revenue</th><th>Avg Deal</th><th>Margin</th></tr></thead><tbody><tr><td>Kitchen Remodels</td><td>8</td><td>$425,000</td><td>$53,125</td><td>19.2%</td></tr><tr><td>Bathroom</td><td>6</td><td>$285,000</td><td>$47,500</td><td>18.5%</td></tr><tr><td>Exterior</td><td>5</td><td>$312,500</td><td>$62,500</td><td>17.8%</td></tr><tr><td>Other</td><td>4</td><td>$177,500</td><td>$44,375</td><td>16.5%</td></tr></tbody></table>
+          </div>
+        </div>
+
+        <!-- AGENT STATUS PAGE -->
+        <div class="page" id="agents">
+          <div class="profile-grid">
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=RaySantos&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #00d4ff;"><div class="profile-name">Ray Santos</div><div class="profile-code">RADAR</div><div class="profile-role">COO</div><div class="profile-engine" style="background: rgba(34,197,94,0.2); color: #22c55e;">Online</div><div style="font-size: 12px; color: #94a3b8;"><div>Last: 2:34 PM</div><div>Next: 3:15 PM</div></div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=MarcusReed&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #ff6b35;"><div class="profile-name">Marcus Reed</div><div class="profile-code">HUNTER</div><div class="profile-role">VP Sales</div><div class="profile-engine" style="background: rgba(34,197,94,0.2); color: #22c55e;">Online</div><div style="font-size: 12px; color: #94a3b8;"><div>Last: 2:28 PM</div><div>Next: 2:45 PM</div></div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=TonySilva&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #22c55e;"><div class="profile-name">Tony Silva</div><div class="profile-code">FOREMAN</div><div class="profile-role">Field Ops</div><div class="profile-engine" style="background: rgba(34,197,94,0.2); color: #22c55e;">Online</div><div style="font-size: 12px; color: #94a3b8;"><div>Last: 1:45 PM</div><div>Next: 4:00 PM</div></div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=AlexChen&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #3b82f6;"><div class="profile-name">Alex Chen</div><div class="profile-code">BRIDGE</div><div class="profile-role">Integration</div><div class="profile-engine" style="background: rgba(251,146,60,0.2); color: #fb923c;">Idle</div><div style="font-size: 12px; color: #94a3b8;"><div>Last: 1:22 PM</div><div>Next: 3:45 PM</div></div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=VictoriaGoldman&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #eab308;"><div class="profile-name">Victoria Goldman</div><div class="profile-code">VAULT</div><div class="profile-role">CFO</div><div class="profile-engine" style="background: rgba(34,197,94,0.2); color: #22c55e;">Online</div><div style="font-size: 12px; color: #94a3b8;"><div>Last: 1:22 PM</div><div>Next: 3:30 PM</div></div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=NathanPatel&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #94a3b8;"><div class="profile-name">Nathan Patel</div><div class="profile-code">LENS</div><div class="profile-role">Analytics</div><div class="profile-engine" style="background: rgba(251,146,60,0.2); color: #fb923c;">Idle</div><div style="font-size: 12px; color: #94a3b8;"><div>Last: 12:30 PM</div><div>Next: 4:30 PM</div></div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=DianaBooks&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #818cf8;"><div class="profile-name">Diana Brooks</div><div class="profile-code">SCRIBE</div><div class="profile-role">Legal & Docs</div><div class="profile-engine" style="background: rgba(251,146,60,0.2); color: #fb923c;">Idle</div><div style="font-size: 12px; color: #94a3b8;"><div>Last: 11:45 AM</div><div>Next: 3:00 PM</div></div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=MaxTorres&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #a78bfa;"><div class="profile-name">Max Torres</div><div class="profile-code">STAMP</div><div class="profile-role">Templates</div><div class="profile-engine" style="background: rgba(251,146,60,0.2); color: #fb923c;">Idle</div><div style="font-size: 12px; color: #94a3b8;"><div>Last: 10:15 AM</div><div>Next: 3:15 PM</div></div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=ClaraKim&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #86efac;"><div class="profile-name">Clara Kim</div><div class="profile-code">TIDY</div><div class="profile-role">Office Mgr</div><div class="profile-engine" style="background: rgba(251,146,60,0.2); color: #fb923c;">Idle</div><div style="font-size: 12px; color: #94a3b8;"><div>Last: 9:05 AM</div><div>Next: 2:00 PM</div></div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=SofiaReyes&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #fb923c;"><div class="profile-name">Sofia Reyes</div><div class="profile-code">SPARK</div><div class="profile-role">Marketing</div><div class="profile-engine" style="background: rgba(251,146,60,0.2); color: #fb923c;">Idle</div><div style="font-size: 12px; color: #94a3b8;"><div>Last: 10:50 AM</div><div>Next: 3:00 PM</div></div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=VictorDrake&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #ef4444;"><div class="profile-name">Victor Drake</div><div class="profile-code">HAWK</div><div class="profile-role">Compliance</div><div class="profile-engine" style="background: rgba(34,197,94,0.2); color: #22c55e;">Online</div><div style="font-size: 12px; color: #94a3b8;"><div>Last: 11:20 AM</div><div>Next: 2:30 PM</div></div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=RobertoCosta&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #f59e0b;"><div class="profile-name">Roberto Costa</div><div class="profile-code">CHIEF</div><div class="profile-role">HR Director</div><div class="profile-engine" style="background: rgba(34,197,94,0.2); color: #22c55e;">Online</div><div style="font-size: 12px; color: #94a3b8;"><div>Last: 9:30 AM</div><div>Next: 4:15 PM</div></div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=KaiNakamura&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #a855f7;"><div class="profile-name">Kai Nakamura</div><div class="profile-code">DARWIN</div><div class="profile-role">CTO</div><div class="profile-engine" style="background: rgba(251,146,60,0.2); color: #fb923c;">Idle</div><div style="font-size: 12px; color: #94a3b8;"><div>Last: Yesterday</div><div>Next: 5:00 PM</div></div></div>
+            <div class="profile-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=OliviaHart&backgroundColor=b6e3f4" class="profile-avatar" style="border-color: #14b8a6;"><div class="profile-name">Olivia Hart</div><div class="profile-code">SCOUT</div><div class="profile-role">Strategy CSO</div><div class="profile-engine" style="background: rgba(251,146,60,0.2); color: #fb923c;">Idle</div><div style="font-size: 12px; color: #94a3b8;"><div>Last: Yesterday</div><div>Next: Tomorrow</div></div></div>
+          </div>
+        </div>
+
+        <!-- API COSTS PAGE -->
+        <div class="page" id="costs">
+          <div class="kpi-grid">
+            <div class="kpi-card"><div class="kpi-label">Daily Spend</div><div class="kpi-value">$82.50</div><div class="kpi-trend up">↑ 5.2% vs yesterday</div></div>
+            <div class="kpi-card"><div class="kpi-label">Monthly Budget</div><div class="kpi-value">$2,475</div><div class="kpi-trend up">$1,540 used</div></div>
+            <div class="kpi-card"><div class="kpi-label">Cost Per Job</div><div class="kpi-value">$104</div><div class="kpi-trend down">↓ 8.3% vs last month</div></div>
+            <div class="kpi-card"><div class="kpi-label">Budget Remaining</div><div class="kpi-value">$935</div><div class="kpi-trend up">62.2% of budget</div></div>
+          </div>
+          <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; margin-top: 30px;">Daily Budget Tracking</h3>
+          <div class="metric-box"><div class="metric-label">March Budget Utilization</div><div class="progress-bar"><div class="progress-fill" style="width: 62%;"></div></div><div style="font-size: 12px; color: #94a3b8; margin-top: 8px;">$1,540 / $2,475 used</div></div>
+          <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px; margin-top: 30px;">Cost Breakdown by Agent</h3>
+          <div class="table-container">
+            <table><thead><tr><th>Agent</th><th>Monthly Cost</th><th>Calls</th><th>Avg Cost</th><th>% of Budget</th></tr></thead><tbody><tr><td>RADAR</td><td>$285</td><td>485</td><td>$0.59</td><td>18.5%</td></tr><tr><td>HUNTER</td><td>$265</td><td>425</td><td>$0.62</td><td>17.2%</td></tr><tr><td>FOREMAN</td><td>$240</td><td>380</td><td>$0.63</td><td>15.6%</td></tr><tr><td>VAULT</td><td>$218</td><td>350</td><td>$0.62</td><td>14.2%</td></tr><tr><td>Others (10)</td><td>$532</td><td>890</td><td>$0.60</td><td>34.5%</td></tr></tbody></table>
+          </div>
+        </div>
+
+        <!-- RULES PAGE -->
+        <div class="page" id="rules">
+          <div style="margin-bottom: 30px;">
+            <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px;">Financial Rules</h3>
+            <div class="alert warning"><strong>FR-001:</strong> No contract under $8K without VAULT approval</div>
+            <div class="alert warning"><strong>FR-002:</strong> Contracts over $150K require CEO approval</div>
+            <div class="alert warning"><strong>FR-003:</strong> Expenses over 35% of revenue trigger review</div>
+            <div class="alert warning"><strong>FR-004:</strong> All invoices processed within 5 business days</div>
+          </div>
+          <div style="margin-bottom: 30px;">
+            <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px;">Operational Rules</h3>
+            <div class="alert info"><strong>OP-001:</strong> Field inspections before design phase</div>
+            <div class="alert info"><strong>OP-002:</strong> Job estimates valid for 30 days</div>
+            <div class="alert info"><strong>OP-003:</strong> Safety certification required for field team</div>
+            <div class="alert info"><strong>OP-004:</strong> Permits must be approved 3 days before start</div>
+            <div class="alert info"><strong>OP-005:</strong> Daily photo documentation for jobs over $50K</div>
+          </div>
+          <div>
+            <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 15px;">Communication Rules</h3>
+            <div class="alert info"><strong>CM-001:</strong> Customer inquiries answered within 4 hours</div>
+            <div class="alert info"><strong>CM-002:</strong> Weekly status updates to all active projects</div>
+            <div class="alert info"><strong>CM-003:</strong> Agent delegation requires confirmation</div>
+            <div class="alert info"><strong>CM-004:</strong> Issues escalated if unresolved after 24 hours</div>
+          </div>
+        </div>
+
+        <!-- INTEGRATIONS PAGE -->
+        <div class="page" id="integrations">
+          <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 20px;">System Integrations</h3>
+          <div style="margin-bottom: 30px;">
+            <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 15px; color: #22c55e;">Connected Integrations</h3>
+            <div class="table-container">
+              <table><thead><tr><th>System</th><th>Status</th><th>Last Sync</th><th>Data Points</th></tr></thead><tbody><tr><td>CRM (HubSpot)</td><td><span class="status-badge complete">Active</span></td><td>2:30 PM Today</td><td>1,247 contacts</td></tr><tr><td>Accounting (QB)</td><td><span class="status-badge complete">Active</span></td><td>2:15 PM Today</td><td>$1.27M</td></tr><tr><td>Project Management</td><td><span class="status-badge complete">Active</span></td><td>2:00 PM Today</td><td>67 projects</td></tr><tr><td>Communication (Slack)</td><td><span class="status-badge complete">Active</span></td><td>1:45 PM Today</td><td>Real-time</td></tr><tr><td>Email (Gmail)</td><td><span class="status-badge complete">Active</span></td><td>1:30 PM Today</td><td>2,456 indexed</td></tr></tbody></table>
+            </div>
+          </div>
+          <div style="margin-bottom: 30px;">
+            <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 15px; color: #fb923c;">In Progress</h3>
+            <div class="table-container">
+              <table><thead><tr><th>System</th><th>Progress</th><th>ETA</th></tr></thead><tbody><tr><td>Permit Tracking (BuildPass)</td><td><div class="progress-bar" style="margin: 0;"><div class="progress-fill" style="width: 65%;"></div></div></td><td>April 5</td></tr><tr><td>Inspection Scheduling</td><td><div class="progress-bar" style="margin: 0;"><div class="progress-fill" style="width: 40%;"></div></div></td><td>April 12</td></tr></tbody></table>
+            </div>
+          </div>
+          <div>
+            <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 15px; color: #64748b;">Planned</h3>
+            <div class="table-container">
+              <table><thead><tr><th>System</th><th>Purpose</th><th>Target Date</th></tr></thead><tbody><tr><td>Payroll (ADP)</td><td>Employee compensation</td><td>May 2025</td></tr><tr><td>Equipment Tracking</td><td>Inventory management</td><td>May 2025</td></tr><tr><td>Customer Portal</td><td>Project dashboard</td><td>June 2025</td></tr><tr><td>Drone Inspection</td><td>Site assessment</td><td>July 2025</td></tr></tbody></table>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 
-  <!-- TASKS TAB -->
-  <div id="tasks" class="tab-content">
-    <div class="section-title">Task Queue — Pending Items</div>
-    <div class="card">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>Task</th><th>Assigned To</th><th>Priority</th><th>Status</th><th>Notes</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>OAuth2 QuickBooks</td>
-              <td>MANUS</td>
-              <td><span class="badge red">Critical</span></td>
-              <td><span class="badge green">Done</span></td>
-              <td>Tokens generated & sent</td>
-            </tr>
-            <tr>
-              <td>Deploy Dashboard</td>
-              <td>MANUS</td>
-              <td><span class="badge red">Critical</span></td>
-              <td><span class="badge blue">In Progress</span></td>
-              <td>GitHub + Render deploy</td>
-            </tr>
-            <tr>
-              <td>Create task_queue table</td>
-              <td>Gustavo / MANUS</td>
-              <td><span class="badge yellow">High</span></td>
-              <td><span class="badge yellow">Pending SQL</span></td>
-              <td>SQL ready — run in Supabase</td>
-            </tr>
-            <tr>
-              <td>Update SKILL.md (12 agents)</td>
-              <td>OpenClaw / MANUS</td>
-              <td><span class="badge yellow">High</span></td>
-              <td><span class="badge gray">Skipped</span></td>
-              <td>Via SSH — deferred</td>
-            </tr>
-            <tr>
-              <td>Verify API costs</td>
-              <td>LEDGER</td>
-              <td><span class="badge gray">Medium</span></td>
-              <td><span class="badge gray">Pending</span></td>
-              <td>Post-optimization check</td>
-            </tr>
-            <tr>
-              <td>W-9 Collection (13 subs)</td>
-              <td>PULSE / Edivania</td>
-              <td><span class="badge red">Critical</span></td>
-              <td><span class="badge gray">Pending</span></td>
-              <td>Blocks all payments</td>
-            </tr>
-            <tr>
-              <td>CONST-008 Follow-up</td>
-              <td>FORGE / Gustavo</td>
-              <td><span class="badge red">Critical</span></td>
-              <td><span class="badge gray">Pending</span></td>
-              <td>7+ weeks no response</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+  <script>
+    // Initialize charts
+    const pipelineCtx = document.getElementById('pipeline-chart').getContext('2d');
+    new Chart(pipelineCtx, {
+      type: 'bar',
+      data: {
+        labels: ['New', 'Appt Set', 'Consultation', 'Design', 'Sale', 'Install'],
+        datasets: [{
+          label: 'Count',
+          data: [7, 7, 61, 6, 4, 3],
+          backgroundColor: ['rgba(255, 140, 0, 0.8)', 'rgba(255, 140, 0, 0.65)', 'rgba(255, 140, 0, 0.5)', 'rgba(255, 140, 0, 0.35)', 'rgba(255, 140, 0, 0.25)', 'rgba(255, 140, 0, 0.15)'],
+          borderColor: '#ff8c00',
+          borderWidth: 1,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: '#cbd5e1', font: { family: "'Inter', sans-serif" } } } },
+        scales: {
+          y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148, 163, 184, 0.1)' } },
+          x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148, 163, 184, 0.1)' } }
+        }
+      }
+    });
 
-</main>
+    const serviceCtx = document.getElementById('service-chart').getContext('2d');
+    new Chart(serviceCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Kitchen', 'Bathroom', 'Exterior', 'Other'],
+        datasets: [{
+          data: [33, 22, 25, 20],
+          backgroundColor: ['rgba(255, 140, 0, 0.8)', 'rgba(255, 140, 0, 0.6)', 'rgba(255, 140, 0, 0.4)', 'rgba(255, 140, 0, 0.2)'],
+          borderColor: '#080c18',
+          borderWidth: 2
+        }]
+      },
+      options: { responsive: true, plugins: { legend: { labels: { color: '#cbd5e1', font: { family: "'Inter', sans-serif" } } } } }
+    });
 
-<footer>
-  GUS SKYY OS v1.0 · Mission Control Dashboard · Deployed via Manus · 2026-03-21
-</footer>
-
-<script>
-  function showTab(id, btn) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    btn.classList.add('active');
-  }
-
-  function updateClock() {
-    const now = new Date();
-    document.getElementById('clock').textContent =
-      now.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'}) + ' · ' +
-      now.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
-  }
-  updateClock();
-  setInterval(updateClock, 30000);
-</script>
+    // NAVIGATION - CRITICAL AND MUST WORK
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', function() {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        this.classList.add('active');
+        const pageId = this.getAttribute('data-page');
+        const page = document.getElementById(pageId);
+        if (page) {
+          page.classList.add('active');
+          const titles = {
+            'dashboard': 'Dashboard',
+            'orgchart': 'Organization Chart',
+            'profiles': 'Team Profiles',
+            'activity': 'Activity Log',
+            'pipeline': 'Sales Pipeline',
+            'jobs': 'Active Jobs',
+            'finance': 'Finance & Revenue',
+            'agents': 'Agent Status',
+            'costs': 'API Costs',
+            'rules': 'System Rules',
+            'integrations': 'Integrations'
+          };
+          document.getElementById('page-title').textContent = titles[pageId] || 'Dashboard';
+        }
+      });
+    });
+  </script>
 </body>
 </html>
