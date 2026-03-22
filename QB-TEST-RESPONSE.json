@@ -1,0 +1,98 @@
+{
+  "test_time": "2026-03-22 08:59:22 EDT",
+  "endpoint": "https://sandbox-quickbooks.api.intuit.com/v3/company/9341455667906253/companyinfo/9341455667906253",
+  "base_url": "https://sandbox-quickbooks.api.intuit.com",
+  "status_code": 200,
+  "note": "IMPORTANT: Use sandbox-quickbooks.api.intuit.com for sandbox, NOT quickbooks.api.intuit.com",
+  "response": {
+    "CompanyInfo": {
+      "CompanyName": "Sandbox Company_US_1",
+      "LegalName": "Sandbox Company_US_1",
+      "CompanyAddr": {
+        "Id": "1",
+        "Line1": "123 Sierra Way",
+        "City": "San Pablo",
+        "CountrySubDivisionCode": "CA",
+        "PostalCode": "87999"
+      },
+      "CustomerCommunicationAddr": {
+        "Id": "1",
+        "Line1": "123 Sierra Way",
+        "City": "San Pablo",
+        "CountrySubDivisionCode": "CA",
+        "PostalCode": "87999"
+      },
+      "LegalAddr": {
+        "Id": "1",
+        "Line1": "123 Sierra Way",
+        "City": "San Pablo",
+        "CountrySubDivisionCode": "CA",
+        "PostalCode": "87999"
+      },
+      "CustomerCommunicationEmailAddr": {
+        "Address": "Gustavom.ferreira@yahoo.com.br"
+      },
+      "PrimaryPhone": {},
+      "CompanyStartDate": "2025-11-10",
+      "FiscalYearStartMonth": "January",
+      "Country": "US",
+      "Email": {
+        "Address": "Gustavom.ferreira@yahoo.com.br"
+      },
+      "WebAddr": {},
+      "SupportedLanguages": "en",
+      "DefaultTimeZone": "America/Los_Angeles",
+      "NameValue": [
+        {
+          "Name": "NonTracking",
+          "Value": "false"
+        },
+        {
+          "Name": "IsQbdtMigrated",
+          "Value": "false"
+        },
+        {
+          "Name": "CompanyType",
+          "Value": "Other"
+        },
+        {
+          "Name": "SubscriptionStatus",
+          "Value": "SUBSCRIBED"
+        },
+        {
+          "Name": "OfferingSku",
+          "Value": "QuickBooks Online Plus"
+        },
+        {
+          "Name": "PayrollFeature",
+          "Value": "false"
+        },
+        {
+          "Name": "AccountantFeature",
+          "Value": "false"
+        },
+        {
+          "Name": "QBOIndustryType",
+          "Value": "Landscaping Services"
+        },
+        {
+          "Name": "ItemCategoriesFeature",
+          "Value": "true"
+        },
+        {
+          "Name": "AssignedTime",
+          "Value": "2025-11-10T06:24:14-08:00"
+        }
+      ],
+      "domain": "QBO",
+      "sparse": false,
+      "Id": "1",
+      "SyncToken": "8",
+      "MetaData": {
+        "CreateTime": "2025-11-10T05:24:13-08:00",
+        "LastUpdatedTime": "2025-11-10T06:26:57-08:00"
+      }
+    },
+    "time": "2026-03-22T05:59:22.892-07:00"
+  }
+}
